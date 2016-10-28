@@ -20,6 +20,7 @@ You need to implement two Data Mining algorithms seen in class:
 
 -------------------------------------------------------------
 Import Declarations ------------------------------------- """
+import sys
 
 
 """ ---------------------------------------------------------
@@ -34,15 +35,51 @@ class ID3:
     """
     ID3 Implementation using the initialized dataset file
     """
-    def __init__(self, filename):
+    def __init__(self, filename, optionsfile):
+
+        # File Handles
         self.filename = filename
-        self.attribute_count = 0  # Number of Attributes
-        self.attribute_options = {}  # Options for each Attribute
-        self.class_options = {}  # End Result Options
+        self.options_file = optionsfile
+
+        # Attribute Variables
+        self.attr_options = {}  # Options for each Attribute
+
+        # Class Variables
+        self.class_options = []  # End Result Options
+
+        # Dataset
         self._values = []  # Array of Data
 
         # Execute Populate during Initialize
+        self.__options()
         self.__populate()
+
+    def __options(self):
+        """
+        Private Function
+
+        Read Imported Options File and Interperet Information
+        :return:
+        """
+        # Open File Handle and Read Lines
+        lines = open(self.options_file).readlines()
+
+        # Loop through all dataset options to get attributes and classes
+        for line in lines:
+
+            # Find Name of the Attribute or Class
+            col = line.find(':')
+            name = line[:col].strip()
+            print(name)
+
+            if name == 'class':
+                # Interpret Class Options
+                self.class_options = line[col:].strip().replace(' ', '').split(',')
+            else:
+                # Interpret Attribute Options
+                attr_name = line[:col+1].strip()
+                self.attr_options[attr_name] = line[col:].strip().replace(' ', '').split(',')
+                print(self.attr_options[attr_name])
 
     def __populate(self):
         """
@@ -54,6 +91,10 @@ class ID3:
         # Open File Handle and Read Lines
         datalines = open(self.filename).readlines()
 
+        # Get Dataset Attribute Count (Subtract 1 since the resulting class is not an attribute)
+        attr_count = len(self.attr_options)
+        print(attr_count)
+
         # Loop through all entries in the data set
         for line in datalines:
 
@@ -61,9 +102,11 @@ class ID3:
             if line.find("?") == -1:
 
                 # Strip CRs and Split data into an array at append it to the global array
-                dataelement = line.strip().split(",")
-                self._values.append(dataelement)
-
+                instance = line.strip().split(',')
+                if len(instance) - 1 == attr_count:
+                    self._values.append(instance)
+                else:
+                    sys.exit('All Data Instances must be the same length')
 
 """ ---------------------------------------------------------
 Function Declarations ----------------------------------- """
@@ -83,7 +126,7 @@ proceed and view the code output he/she would like to view.
 def main():
 
     # Init ID3 Dataset and Populate it from the DataSet File
-    dataset = ID3(filename='datasets/small_census.txt')
+    dataset = ID3(filename='datasets/small_census.txt', optionsfile='datasets/census_options.txt')
 
 
 if __name__ == '__main__':
