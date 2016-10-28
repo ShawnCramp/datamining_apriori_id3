@@ -2,11 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="07f6119a-891e-4d61-9cc1-e167470bfbc1" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/datasets/small_census.txt" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/reader.py" afterPath="" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/datasets/census.txt" afterPath="$PROJECT_DIR$/src/datasets/census.txt" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/apriori.py" afterPath="$PROJECT_DIR$/src/apriori.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/id3.py" afterPath="$PROJECT_DIR$/src/id3.py" />
     </list>
     <ignored path="datamining_apriori_id3.iws" />
@@ -35,8 +30,8 @@
       <file leaf-file-name="id3.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/id3.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="834">
-              <caret line="74" column="0" selection-start-line="74" selection-start-column="0" selection-end-line="74" selection-end-column="0" />
+            <state relative-caret-position="222">
+              <caret line="35" column="7" selection-start-line="35" selection-start-column="7" selection-end-line="35" selection-end-column="7" />
               <folding />
             </state>
           </provider>
@@ -491,8 +486,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/id3.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="834">
-          <caret line="74" column="0" selection-start-line="74" selection-start-column="0" selection-end-line="74" selection-end-column="0" />
+        <state relative-caret-position="222">
+          <caret line="35" column="7" selection-start-line="35" selection-start-column="7" selection-end-line="35" selection-end-column="7" />
           <folding />
         </state>
       </provider>

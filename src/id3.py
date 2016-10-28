@@ -32,15 +32,22 @@ Class Declarations -------------------------------------- """
 
 class ID3:
     """
-    DataSet class for containing the information from the imported
-    dataset
+    ID3 Implementation using the initialized dataset file
     """
     def __init__(self, filename):
         self.filename = filename
-        self._values = []
+        self.attribute_count = 0  # Number of Attributes
+        self.attribute_options = {}  # Options for each Attribute
+        self.class_options = {}  # End Result Options
+        self._values = []  # Array of Data
 
-    def populate(self):
+        # Execute Populate during Initialize
+        self.__populate()
+
+    def __populate(self):
         """
+        Private Function
+
         Read Dataset File and store information into self._values
         :return:
         """
@@ -53,7 +60,7 @@ class ID3:
             # If line does not contain missing information then keep the line
             if line.find("?") == -1:
 
-                # Split data into an array at append it to the global array
+                # Strip CRs and Split data into an array at append it to the global array
                 dataelement = line.strip().split(",")
                 self._values.append(dataelement)
 
@@ -77,7 +84,6 @@ def main():
 
     # Init ID3 Dataset and Populate it from the DataSet File
     dataset = ID3(filename='datasets/small_census.txt')
-    dataset.populate()
 
 
 if __name__ == '__main__':
