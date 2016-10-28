@@ -108,6 +108,12 @@ class ID3:
                 else:
                     sys.exit('All Data Instances must be the same length')
 
+    def __gain(self):
+        pass
+
+    def __reduction(self):
+        pass
+
 """ ---------------------------------------------------------
 Function Declarations ----------------------------------- """
 
