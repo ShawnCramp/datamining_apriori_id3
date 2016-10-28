@@ -30,6 +30,34 @@ Global Declarations ------------------------------------- """
 Class Declarations -------------------------------------- """
 
 
+class Apriori:
+    """
+    DataSet class for containing the information from the imported
+    dataset
+    """
+    def __init__(self, filename):
+        self.filename = filename
+        self._values = []
+
+    def create(self):
+        """
+        Read Dataset File and store information into self._values
+        :return:
+        """
+        # Open File Handle and Read Lines
+        datalines = open(self.filename).readlines()
+
+        # Loop through all entries in the data set
+        for line in datalines:
+
+            # If line does not contain missing information then keep the line
+            if line.find("?") == -1:
+
+                # Split data into an array at append it to the global array
+                dataelement = line.strip().split(",")
+                self._values.append(dataelement)
+
+
 """ ---------------------------------------------------------
 Function Declarations ----------------------------------- """
 
@@ -44,3 +72,11 @@ proceed and view the code output he/she would like to view.
 -------------------------------------------------------------
 --------------------------------------------------------- """
 
+
+def main():
+    dataset = Apriori(filename='datasets/small_census.txt')
+    dataset.create()
+
+
+if __name__ == '__main__':
+    main()
