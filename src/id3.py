@@ -21,6 +21,7 @@ You need to implement two Data Mining algorithms seen in class:
 -------------------------------------------------------------
 Import Declarations ------------------------------------- """
 import sys
+import math
 
 
 """ ---------------------------------------------------------
@@ -54,6 +55,9 @@ class ID3:
         self.__options()
         self.__populate()
 
+        # Calculate Entropy
+        self.class_entropy = self.__class_entropy()
+
     def __options(self):
         """
         Private Function
@@ -70,16 +74,14 @@ class ID3:
             # Find Name of the Attribute or Class
             col = line.find(':')
             name = line[:col].strip()
-            print(name)
 
             if name == 'class':
                 # Interpret Class Options
-                self.class_options = line[col:].strip().replace(' ', '').split(',')
+                self.class_options = line[col+1:].strip().replace(' ', '').split(',')
             else:
                 # Interpret Attribute Options
-                attr_name = line[:col+1].strip()
-                self.attr_options[attr_name] = line[col:].strip().replace(' ', '').split(',')
-                print(self.attr_options[attr_name])
+                attr_name = line[:col].strip()
+                self.attr_options[attr_name] = line[col+1:].strip().replace(' ', '').split(',')
 
     def __populate(self):
         """
@@ -102,11 +104,45 @@ class ID3:
             if line.find("?") == -1:
 
                 # Strip CRs and Split data into an array at append it to the global array
-                instance = line.strip().split(',')
+                instance = line.strip().replace(' ', '').split(',')
                 if len(instance) - 1 == attr_count:
                     self._values.append(instance)
                 else:
                     sys.exit('All Data Instances must be the same length')
+
+    def __class_entropy(self):
+        """
+        Calculate Global Class Entropy level
+        :return:
+        """
+        # Get number of instances in the dataset
+        data_count = len(self._values)
+        class_count = []
+
+        # Loop through class options
+        for cl in self.class_options:
+            print(cl)
+            counter = 0
+
+            # Count number of times class option appears in instance results
+            for instance in self._values:
+                if instance[-1] == cl:
+                    counter += 1
+
+            # Append the count array for calculations
+            class_count.append(counter)
+
+        # Calculate Entropy
+        entropy = 0
+        for value in class_count:
+            percent = float(value) / data_count
+            entropy -= percent * math.log(percent)
+
+        print('Resulting Global Entropy: %f' % entropy)
+        return entropy
+
+    def __attr_entropy(self):
+        pass
 
     def __gain(self):
         pass
