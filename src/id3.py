@@ -48,13 +48,13 @@ class ID3:
         self.attr_position = {}  # Attribute Column position in 2d Array
 
         # Class Variables
-        self.class_options = []  # End Result Options
+        # self.class_options = []  # End Result Options
 
         # Dataset
         self._values = []  # Array of Data
 
         # Calculate Entropy
-        self.class_entropy = 0
+        # self.class_entropy = 0
 
         # Execute Populate during Initialize
         self.__options()
@@ -75,17 +75,10 @@ class ID3:
 
             # Find Name of the Attribute or Class
             col = line.find(':')
-            name = line[:col].strip()
+            attr_name = line[:col].strip()
 
-            if name == 'class':
-                # Interpret Class Options
-                self.class_options = line[col+1:].strip().replace(' ', '').split(',')
-            else:
-                # Interpret Attribute Options
-                attr_name = line[:col].strip()
-                self.attr_position[attr_name] = i - 1
-                # print 'Position: {} {}'.format(attr_name, i - 1)
-                self.attr_options[attr_name] = line[col+1:].strip().replace(' ', '').split(',')
+            self.attr_position[attr_name] = i - 1
+            self.attr_options[attr_name] = line[col+1:].strip().replace(' ', '').split(',')
 
     def __populate(self):
         """
@@ -109,7 +102,7 @@ class ID3:
 
                 # Strip CRs and Split data into an array at append it to the global array
                 instance = line.strip().replace(' ', '').split(',')
-                if len(instance) - 1 == attr_count:
+                if len(instance) == attr_count:
                     self._values.append(instance)
                 else:
                     sys.exit('All Data Instances must be the same length')
@@ -122,41 +115,53 @@ class ID3:
         # Get Attribute Column position
         position = self.attr_position[attr]
 
-        count = 0
+        count = {}
         for instance in values:
-            if instance[position] == attr:
-                count += 1
+            val = instance[position]
+            if val not in count:
+                count[val] = 1
+            else:
+                count[val] += 1
 
         return count
 
-    def __class_entropy(self):
+    def __entropy(self, attr, values):
         """
         Calculate Global Class Entropy level
         :return:
         """
         # Get number of instances in the dataset
-        data_count = len(self._values)
-        class_count = []
+        data_count = len(values)
+        options = self.attr_options[attr]
+        position = self.attr_position[attr]
+        op_counter = {}
 
-        # Loop through class options
-        for cl in self.class_options:
-            counter = 0
+        if options[0] == 'continuous':
+            op_counter = self.__attr_count(attr, self._values)
+        else:
+            # Loop through options
+            for op in options:
+                counter = 0
 
-            # Count number of times class option appears in instance results
-            for instance in self._values:
-                if instance[-1] == cl:
-                    counter += 1
+                # Count number of times class option appears in instance results
+                for instance in values:
+                    if instance[position] == op:
+                        counter += 1
 
-            # Append the count array for calculations
-            class_count.append(counter)
+                # Append the count array for calculations
+                op_counter[op] = counter
+
+        print(op_counter)
+        print('Data Count: %d' % data_count)
 
         # Calculate Entropy
         entropy = 0
-        for value in class_count:
-            percent = float(value) / data_count
-            entropy -= percent * math.log(percent)
+        for key, value in op_counter.iteritems():
+            if value != 0:
+                percent = float(value) / data_count
+                entropy -= percent * math.log10(percent)
 
-        print('Resulting Global Entropy: %f' % entropy)
+        print('%s Resulting Entropy: %f\n' % (attr, entropy))
         return entropy
 
     def __attr_entropy(self):
@@ -172,7 +177,17 @@ class ID3:
         """
         Calculate Entropy levels of Dataset and Create Flow Chart
         """
-        self.class_entropy = self.__class_entropy()
+        gains = {}
+        global_entropy = self.__entropy(attr='class', values=self._values)
+
+        for key, value in self.attr_options.iteritems():
+            if key != 'class':
+                entropy = self.__entropy(attr=key, values=self._values)
+                g = entropy - global_entropy
+                gains[key] = g
+
+        print(gains)
+
 
 """ ---------------------------------------------------------
 Function Declarations ----------------------------------- """
