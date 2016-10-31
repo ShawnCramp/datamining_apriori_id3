@@ -44,6 +44,8 @@ class ID3:
 
         # Attribute Variables
         self.attr_options = {}  # Options for each Attribute
+        # self.attr_length = {}  # Number of Times Attribute Appears
+        self.attr_position = {}  # Attribute Column position in 2d Array
 
         # Class Variables
         self.class_options = []  # End Result Options
@@ -51,12 +53,12 @@ class ID3:
         # Dataset
         self._values = []  # Array of Data
 
+        # Calculate Entropy
+        self.class_entropy = 0
+
         # Execute Populate during Initialize
         self.__options()
         self.__populate()
-
-        # Calculate Entropy
-        self.class_entropy = self.__class_entropy()
 
     def __options(self):
         """
@@ -69,7 +71,7 @@ class ID3:
         lines = open(self.options_file).readlines()
 
         # Loop through all dataset options to get attributes and classes
-        for line in lines:
+        for i, line in enumerate(lines):
 
             # Find Name of the Attribute or Class
             col = line.find(':')
@@ -81,6 +83,8 @@ class ID3:
             else:
                 # Interpret Attribute Options
                 attr_name = line[:col].strip()
+                self.attr_position[attr_name] = i - 1
+                # print 'Position: {} {}'.format(attr_name, i - 1)
                 self.attr_options[attr_name] = line[col+1:].strip().replace(' ', '').split(',')
 
     def __populate(self):
@@ -95,7 +99,7 @@ class ID3:
 
         # Get Dataset Attribute Count (Subtract 1 since the resulting class is not an attribute)
         attr_count = len(self.attr_options)
-        print(attr_count)
+        print('Number of Attributes: %d' % attr_count)
 
         # Loop through all entries in the data set
         for line in datalines:
@@ -110,6 +114,21 @@ class ID3:
                 else:
                     sys.exit('All Data Instances must be the same length')
 
+    def __attr_count(self, attr, values):
+        """
+        Count the number of times an attr appears
+        :return:
+        """
+        # Get Attribute Column position
+        position = self.attr_position[attr]
+
+        count = 0
+        for instance in values:
+            if instance[position] == attr:
+                count += 1
+
+        return count
+
     def __class_entropy(self):
         """
         Calculate Global Class Entropy level
@@ -121,7 +140,6 @@ class ID3:
 
         # Loop through class options
         for cl in self.class_options:
-            print(cl)
             counter = 0
 
             # Count number of times class option appears in instance results
@@ -150,6 +168,12 @@ class ID3:
     def __reduction(self):
         pass
 
+    def calc_entropy(self):
+        """
+        Calculate Entropy levels of Dataset and Create Flow Chart
+        """
+        self.class_entropy = self.__class_entropy()
+
 """ ---------------------------------------------------------
 Function Declarations ----------------------------------- """
 
@@ -169,6 +193,7 @@ def main():
 
     # Init ID3 Dataset and Populate it from the DataSet File
     dataset = ID3(filename='datasets/small_census.txt', optionsfile='datasets/census_options.txt')
+    dataset.calc_entropy()
 
 
 if __name__ == '__main__':
