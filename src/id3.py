@@ -137,19 +137,19 @@ class ID3:
         op_counter = {}
 
         if options[0] == 'continuous':
-            op_counter = self.__attr_count(attr, self._values)
-        else:
-            # Loop through options
-            for op in options:
-                counter = 0
+            options = [i+1 for i in xrange(100)]
 
-                # Count number of times class option appears in instance results
-                for instance in values:
-                    if instance[position] == op:
-                        counter += 1
+        # Loop through options
+        for op in options:
+            counter = 0
 
-                # Append the count array for calculations
-                op_counter[op] = counter
+            # Count number of times class option appears in instance results
+            for instance in values:
+                if instance[position] == str(op):
+                    counter += 1
+
+            # Append the count array for calculations
+            op_counter[op] = counter
 
         print(op_counter)
         print('Data Count: %d' % data_count)
@@ -205,7 +205,6 @@ proceed and view the code output he/she would like to view.
 
 
 def main():
-
     # Init ID3 Dataset and Populate it from the DataSet File
     dataset = ID3(filename='datasets/small_census.txt', optionsfile='datasets/census_options.txt')
     dataset.calc_entropy()
