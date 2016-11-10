@@ -206,7 +206,7 @@ proceed and view the code output he/she would like to view.
 
 def main():
     # Init ID3 Dataset and Populate it from the DataSet File
-    dataset = ID3(filename='datasets/small_census.txt', optionsfile='datasets/census_options.txt')
+    dataset = ID3(filename='datasets/trim.txt', optionsfile='datasets/trim_options.txt')
     dataset.calc_entropy()
 
 
