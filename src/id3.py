@@ -32,6 +32,82 @@ Global Declarations ------------------------------------- """
 Class Declarations -------------------------------------- """
 
 
+class Table:
+    """
+    Table of Data Rows used for each Node Instance of the ID3 Tree
+    """
+    def __init__(self, attributes, rows):
+        self.attributes = attributes
+        self.rows = rows
+
+    def __len__(self):
+        return len(self.rows)
+
+
+class Node:
+    def __init__(self, name, table):
+
+        # Attribute Result Associated with the Node
+        self.name = name
+
+        # Table Associated with the Node
+        self.table = table
+
+        # Leaf Children Below the Node
+        # This will be of length 1 of it is a result
+        self.children = None
+
+    def find_children(self):
+        """
+        Find all Children to this Node
+        :return:
+        """
+
+    def breakout_check(self):
+        """
+        Determine if the Node points to only one answer.  If so, it is a breakout Node
+        and will have a Result instead of Leaf Nodes
+        """
+
+    def entropy(self, attr):
+        """
+        Calculate Global Class Entropy level
+        :return:
+        """
+
+        # Get number of instances in the dataset
+        data_count = len(self.table)
+        options = self.attributes[attr]  # Options for the Attribute header
+        position = self.positions[attr]
+        op_counter = {}
+
+        # Loop through options
+        for op in options:
+            counter = 0
+
+            # Count number of times class option appears in instance results
+            for instance in self.table:
+                if instance[position] == str(op):
+                    counter += 1
+
+            # Append the count array for calculations
+            op_counter[op] = counter
+
+        print(op_counter)
+        print('Data Count: %d' % data_count)
+
+        # Calculate Entropy
+        entr = 0
+        for key, value in op_counter.iteritems():
+            if value != 0:
+                percent = float(value) / data_count
+                entr -= percent * math.log10(percent)
+
+        print('%s Resulting Entropy: %f\n' % (attr, entr))
+
+        return entr
+
+
 class ID3:
     """
     ID3 Implementation using the initialized dataset file
@@ -44,17 +120,13 @@ class ID3:
 
         # Attribute Variables
         self.attr_options = {}  # Options for each Attribute
-        # self.attr_length = {}  # Number of Times Attribute Appears
         self.attr_position = {}  # Attribute Column position in 2d Array
-
-        # Class Variables
-        # self.class_options = []  # End Result Options
 
         # Dataset
         self._values = []  # Array of Data
 
-        # Calculate Entropy
-        # self.class_entropy = 0
+        # Tree Root
+        self.root = None
 
         # Execute Populate during Initialize
         self.__options()
@@ -207,7 +279,6 @@ proceed and view the code output he/she would like to view.
 def main():
     # Init ID3 Dataset and Populate it from the DataSet File
     dataset = ID3(filename='datasets/trim.txt', optionsfile='datasets/trim_options.txt')
-    dataset.calc_entropy()
 
 
 if __name__ == '__main__':
