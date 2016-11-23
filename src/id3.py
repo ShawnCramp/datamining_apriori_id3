@@ -23,10 +23,9 @@ Import Declarations ------------------------------------- """
 import sys
 import math
 
-
 """ ---------------------------------------------------------
 Global Declarations ------------------------------------- """
-
+ATTR_OPTIONS = {}
 
 """ ---------------------------------------------------------
 Class Declarations -------------------------------------- """
@@ -57,11 +56,17 @@ class Node:
         # This will be of length 1 of it is a result
         self.children = None
 
+        # Find Children
+        self.find_children()
+
     def find_children(self):
         """
         Find all Children to this Node
         :return:
         """
+        for attr in self.table.attributes:
+            print(attr)
+            self.entropy(attr)
 
     def breakout_check(self):
         """
@@ -77,8 +82,8 @@ class Node:
 
         # Get number of instances in the dataset
         data_count = len(self.table)
-        options = self.attributes[attr]  # Options for the Attribute header
-        position = self.positions[attr]
+        options = ATTR_OPTIONS[attr]  # Options for the Attribute header
+        position = self.table.attributes.index(attr)
         op_counter = {}
 
         # Loop through options
@@ -86,7 +91,7 @@ class Node:
             counter = 0
 
             # Count number of times class option appears in instance results
-            for instance in self.table:
+            for instance in self.table.rows:
                 if instance[position] == str(op):
                     counter += 1
 
@@ -276,9 +281,53 @@ proceed and view the code output he/she would like to view.
 --------------------------------------------------------- """
 
 
+def interpret_options(optionsfile):
+    # Open File Handle and Read Lines
+    lines = open(optionsfile).readlines()
+    attributes = []
+
+    # Loop through all dataset options to get attributes and classes
+    for i, line in enumerate(lines):
+        # Find Name of the Attribute or Class
+        col = line.find(':')
+        attr_name = line[:col].strip()
+        attributes.append(attr_name)
+        ATTR_OPTIONS[attr_name] = line[col+1:].strip().replace(' ', '').split(',')
+
+    return attributes
+
+
+def interpret_dataset(datafile):
+    # Open File Handle and Read Lines
+    datalines = open(datafile).readlines()
+    values = []
+
+    # Get Dataset Attribute Count (Subtract 1 since the resulting class is not an attribute)
+    attr_count = len(ATTR_OPTIONS)
+    print('Number of Attributes: %d' % attr_count)
+
+    # Loop through all entries in the data set
+    for line in datalines:
+
+        # If line does not contain missing information then keep the line
+        if line.find("?") == -1:
+
+            # Strip CRs and Split data into an array at append it to the global array
+            instance = line.strip().replace(' ', '').split(',')
+            if len(instance) == attr_count:
+                values.append(instance)
+            else:
+                sys.exit('All Data Instances must be the same length')
+
+    return values
+
+
 def main():
     # Init ID3 Dataset and Populate it from the DataSet File
-    dataset = ID3(filename='datasets/trim.txt', optionsfile='datasets/trim_options.txt')
+    attributes = interpret_options(optionsfile='datasets/trim_options.txt')
+    values = interpret_dataset(datafile='datasets/trim.txt')
+    table = Table(attributes=attributes, rows=values)
+    tree = Node(name='Root', table=table)
 
 
 if __name__ == '__main__':
