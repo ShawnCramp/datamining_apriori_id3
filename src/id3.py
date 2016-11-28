@@ -141,7 +141,7 @@ class Node:
 
             entropy += (float(attribute_counter[key1]) / len(self.table)) * temp
 
-        print('Entropy: {}'.format(entropy))
+        print('{} Entropy: {}'.format(attr, entropy))
 
         # Multiply Attribute Appearance by Entropy above
         for key, op in op_class_counter.iteritems():
@@ -405,8 +405,8 @@ def interpret_dataset(datafile):
 
 def main():
     # Init ID3 Dataset and Populate it from the DataSet File
-    attributes = interpret_options(optionsfile='datasets/k_attributes.txt')
-    values = interpret_dataset(datafile='datasets/k_dataset.txt')
+    attributes = interpret_options(optionsfile='datasets/attributes.txt')
+    values = interpret_dataset(datafile='datasets/dataset.txt')
     table = Table(attributes=attributes, rows=values)
     tree = Node(name='Root', depth=0, table=table)
 
