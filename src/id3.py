@@ -44,13 +44,16 @@ class Table:
 
 
 class Node:
-    def __init__(self, name, table):
+    def __init__(self, name, depth, table):
 
         # Attribute Result Associated with the Node
         self.name = name
 
         # Table Associated with the Node
         self.table = table
+
+        # Node Depth
+        self.depth = depth
 
         # Leaf Children Below the Node
         # This will be of length 1 of it is a result
@@ -64,9 +67,16 @@ class Node:
         Find all Children to this Node
         :return:
         """
+        # class_entropy = self.entropy('class')
+        highest_gain = 0
+        expand = ''
         for attr in self.table.attributes:
-            print(attr)
-            self.entropy(attr)
+            if attr != 'class':
+                attr_entropy = self.entropy(attr)
+                # if (class_entropy - attr_entropy) > highest_gain:
+                #     expand = attr
+
+        print(expand)
 
     def breakout_check(self):
         """
@@ -74,9 +84,15 @@ class Node:
         and will have a Result instead of Leaf Nodes
         """
 
+    def class_entropy(self):
+        """
+        Calculate Global Class Entropy Level
+        :return:
+        """
+
     def entropy(self, attr):
         """
-        Calculate Global Class Entropy level
+        Calculate Global Class Entropy Level
         :return:
         """
 
@@ -84,33 +100,98 @@ class Node:
         data_count = len(self.table)
         options = ATTR_OPTIONS[attr]  # Options for the Attribute header
         position = self.table.attributes.index(attr)
-        op_counter = {}
 
-        # Loop through options
+        # Steps for Entropy
+        # Get Number of times each attribute appears
+        attribute_counter = {}
         for op in options:
             counter = 0
-
-            # Count number of times class option appears in instance results
-            for instance in self.table.rows:
-                if instance[position] == str(op):
+            for row in self.table.rows:
+                if row[position] == str(op):
                     counter += 1
 
-            # Append the count array for calculations
-            op_counter[op] = counter
+            attribute_counter[op] = counter
 
-        print(op_counter)
-        print('Data Count: %d' % data_count)
+        # Get Number of times each class options shows up for each attribute option
+        class_options = ATTR_OPTIONS['class']
+        op_class_counter = {}
+        for op in options:
+            class_counter = {}
+            for co in class_options:
+                counter = 0
+                for row in self.table.rows:
+                    if row[position] == str(op) and row[-1] == co:
+                        counter += 1
+                class_counter[co] = counter
+            op_class_counter[op] = class_counter
 
-        # Calculate Entropy
-        entr = 0
-        for key, value in op_counter.iteritems():
-            if value != 0:
-                percent = float(value) / data_count
-                entr -= percent * math.log10(percent)
+        # Calc Class Appearance over Attribute total appearance entropy
+        # print(op_class_counter)
+        entropy = 0
+        for key1, op in op_class_counter.iteritems():
 
-        print('%s Resulting Entropy: %f\n' % (attr, entr))
+            temp = 0
+            # print(op)
+            for key2, sel in op.iteritems():
+                # print(sel)
+                # print(attribute_counter[key1])
+                if sel != 0:
+                    div = float(sel) / attribute_counter[key1]
+                    temp -= div * math.log(div, 2)
 
-        return entr
+            entropy += (float(attribute_counter[key1]) / len(self.table)) * temp
+
+        print('Entropy: {}'.format(entropy))
+
+        # Multiply Attribute Appearance by Entropy above
+        for key, op in op_class_counter.iteritems():
+            entropy = 0
+
+
+
+
+
+
+
+
+
+
+
+
+
+        # op_counter = {}
+        #
+        # # Loop through options
+        # for op in options:
+        #     counter = 0
+        #
+        #     # Count number of times Attribute option appears in instance results
+        #     for instance in self.table.rows:
+        #         if instance[position] == str(op):
+        #             counter += 1
+        #
+        #     # Append the count array for calculations
+        #     op_counter[op] = counter
+        #
+        # print(op_counter)
+        # print('Data Count: %d' % data_count)
+        #
+        #
+        # # Calculate Entropy
+        # entr = 0
+        # for key, value in op_counter.iteritems():
+        #     if value != 0:
+        #         percent = float(value) / data_count
+        #         if entr == 0:
+        #             entr = -(percent * math.log(percent, 2))
+        #             print(entr)
+        #         else:
+        #             entr -= percent * math.log(percent, 2)
+        #
+        # print('%s Resulting Entropy: %f\n' % (attr, entr))
+
+        # return entr
+        return
 
 
 class ID3:
@@ -324,10 +405,10 @@ def interpret_dataset(datafile):
 
 def main():
     # Init ID3 Dataset and Populate it from the DataSet File
-    attributes = interpret_options(optionsfile='datasets/trim_options.txt')
-    values = interpret_dataset(datafile='datasets/trim.txt')
+    attributes = interpret_options(optionsfile='datasets/k_attributes.txt')
+    values = interpret_dataset(datafile='datasets/k_dataset.txt')
     table = Table(attributes=attributes, rows=values)
-    tree = Node(name='Root', table=table)
+    tree = Node(name='Root', depth=0, table=table)
 
 
 if __name__ == '__main__':
