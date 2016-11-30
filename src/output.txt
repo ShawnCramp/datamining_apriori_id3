@@ -1,0 +1,92 @@
+{  Husband } --> {  Married-civ-spouse,  Male }, conf: 1.00 
+{  Husband,  White } --> {  Married-civ-spouse,  Male }, conf: 1.00 
+{  Husband,  United-States } --> {  Married-civ-spouse,  Male }, conf: 1.00 
+{  Husband,  United-States,  White } --> {  Married-civ-spouse,  Male }, conf: 1.00 
+{  Husband,  White } --> {  Male,  United-States }, conf: 0.89 
+{  Husband,  White } --> {  Married-civ-spouse,  United-States }, conf: 0.89 
+{  Husband,  Male,  White } --> {  Married-civ-spouse,  United-States }, conf: 0.89 
+{  Married-civ-spouse,  Husband,  White } --> {  Male,  United-States }, conf: 0.89 
+{  Husband,  White } --> {  Married-civ-spouse,  Male,  United-States }, conf: 0.89 
+{  Husband,  United-States } --> {  White,  Male }, conf: 0.87 
+{  Husband,  United-States } --> {  Married-civ-spouse,  White }, conf: 0.87 
+{  Married-civ-spouse,  White,  United-States } --> {  Husband,  Male }, conf: 0.87 
+{  Husband,  Male,  United-States } --> {  Married-civ-spouse,  White }, conf: 0.87 
+{  Married-civ-spouse,  Husband,  United-States } --> {  White,  Male }, conf: 0.87 
+{  Husband,  United-States } --> {  Married-civ-spouse,  White,  Male }, conf: 0.87 
+{  Married-civ-spouse,  United-States } --> {  Husband,  Male }, conf: 0.86 
+{  Married-civ-spouse,  White } --> {  Husband,  Male }, conf: 0.86 
+{  Married-civ-spouse,  White,  Male } --> {  Husband,  United-States }, conf: 0.85 
+{  Married-civ-spouse } --> {  Husband,  Male }, conf: 0.84 
+{  Husband } --> {  Male,  United-States }, conf: 0.83 
+{  Husband } --> {  Married-civ-spouse,  United-States }, conf: 0.83 
+{  Husband,  Male } --> {  Married-civ-spouse,  United-States }, conf: 0.83 
+{  Married-civ-spouse,  Husband } --> {  Male,  United-States }, conf: 0.83 
+{  Husband } --> {  Married-civ-spouse,  Male,  United-States }, conf: 0.83 
+{  Married-civ-spouse,  Male,  United-States } --> {  Husband,  White }, conf: 0.82 
+{  Married-civ-spouse,  White } --> {  Male,  United-States }, conf: 0.81 
+{  Husband } --> {  White,  Male }, conf: 0.80 
+{  Husband } --> {  Married-civ-spouse,  White }, conf: 0.80 
+{  Husband,  Male } --> {  Married-civ-spouse,  White }, conf: 0.80 
+{  Married-civ-spouse,  Husband } --> {  White,  Male }, conf: 0.80 
+{  Husband } --> {  Married-civ-spouse,  White,  Male }, conf: 0.80 
+{  Married-civ-spouse,  United-States } --> {  White,  Male }, conf: 0.80 
+{  Married-civ-spouse,  Male } --> {  Husband,  United-States }, conf: 0.79 
+{  Married-civ-spouse,  Male } --> {  Husband,  White }, conf: 0.77 
+{  Married-civ-spouse,  White } --> {  Husband,  United-States }, conf: 0.77 
+{  Married-civ-spouse,  White } --> {  Husband,  Male,  United-States }, conf: 0.77 
+{  Male,  <=50K } --> {  White,  United-States }, conf: 0.76 
+{  Married-civ-spouse,  United-States } --> {  Husband,  White }, conf: 0.75 
+{  Married-civ-spouse,  United-States } --> {  Husband,  Male,  White }, conf: 0.75 
+{  Male, Private } --> {  White,  United-States }, conf: 0.74 
+{  Male, Private } --> {  White,  <=50K }, conf: 0.74 
+{  Male } --> {  White,  United-States }, conf: 0.73 
+{  Married-civ-spouse,  Male } --> {  White,  United-States }, conf: 0.73 
+{  Married-civ-spouse } --> {  Male,  United-States }, conf: 0.73 
+{  Husband } --> {  White,  United-States }, conf: 0.72 
+{  Husband,  Male } --> {  White,  United-States }, conf: 0.72 
+{  Husband } --> {  White,  Male,  United-States }, conf: 0.72 
+{  Married-civ-spouse,  Husband } --> {  White,  United-States }, conf: 0.72 
+{  Husband } --> {  Married-civ-spouse,  White,  United-States }, conf: 0.72 
+{  Married-civ-spouse,  Husband,  Male } --> {  White,  United-States }, conf: 0.72 
+{  Husband,  Male } --> {  Married-civ-spouse,  White,  United-States }, conf: 0.72 
+{  Married-civ-spouse,  Husband } --> {  White,  Male,  United-States }, conf: 0.72 
+{  Husband } --> {  United-States,  Married-civ-spouse,  White,  Male }, conf: 0.72 
+{ Private,  United-States } --> {  White,  <=50K }, conf: 0.71 
+{  Married-civ-spouse } --> {  White,  Male }, conf: 0.71 
+{  <=50K } --> {  White,  United-States }, conf: 0.70 
+{  White, Private } --> {  <=50K,  United-States }, conf: 0.70 
+{  Male, Private } --> {  <=50K,  United-States }, conf: 0.70 
+{  Married-civ-spouse } --> {  White,  United-States }, conf: 0.69 
+{  Married-civ-spouse } --> {  Husband,  United-States }, conf: 0.69 
+{  Married-civ-spouse } --> {  Husband,  Male,  United-States }, conf: 0.69 
+{  <=50K, Private } --> {  White,  United-States }, conf: 0.69 
+{  Married-civ-spouse,  Male } --> {  Husband,  United-States,  White }, conf: 0.69 
+{ Private } --> {  White,  United-States }, conf: 0.69 
+{  White,  <=50K } --> {  Male,  United-States }, conf: 0.68 
+{  Married-civ-spouse } --> {  Husband,  White }, conf: 0.67 
+{  Married-civ-spouse } --> {  Husband,  Male,  White }, conf: 0.67 
+{ Private } --> {  White,  <=50K }, conf: 0.67 
+{ Private } --> {  <=50K,  United-States }, conf: 0.67 
+{  White,  <=50K } --> { Private,  United-States }, conf: 0.67 
+{  White } --> {  Male,  United-States }, conf: 0.67 
+{  White,  Male } --> {  <=50K,  United-States }, conf: 0.66 
+{  Male,  United-States } --> {  White,  <=50K }, conf: 0.66 
+{  <=50K,  United-States } --> {  White,  Male }, conf: 0.66 
+{  United-States } --> {  White,  Male }, conf: 0.66 
+{  <=50K,  United-States } --> {  White, Private }, conf: 0.65 
+{  White } --> {  <=50K,  United-States }, conf: 0.64 
+{  Married-civ-spouse } --> {  White,  Male,  United-States }, conf: 0.64 
+{  <=50K } --> {  White,  Male }, conf: 0.64 
+{  Male } --> {  White,  <=50K }, conf: 0.64 
+{  <=50K } --> {  White, Private }, conf: 0.64 
+{  <=50K } --> {  United-States, Private }, conf: 0.64 
+{  <=50K } --> {  Male,  United-States }, conf: 0.64 
+{  Male } --> {  <=50K,  United-States }, conf: 0.64 
+{  United-States } --> {  White,  <=50K }, conf: 0.63 
+{  Male,  <=50K } --> {  White, Private }, conf: 0.63 
+{  Male } --> {  Married-civ-spouse,  Husband }, conf: 0.62 
+{  Male,  United-States } --> {  Married-civ-spouse,  Husband }, conf: 0.61 
+{  White,  Male,  United-States } --> {  Married-civ-spouse,  Husband }, conf: 0.61 
+{ Private,  United-States } --> {  White,  Male }, conf: 0.61 
+{  Married-civ-spouse } --> {  Husband,  United-States,  White }, conf: 0.60 
+{  Married-civ-spouse } --> {  Husband,  United-States,  White,  Male }, conf: 0.60 

@@ -1,0 +1,57 @@
+Frequent set: {  Husband }, support: 0.46
+Frequent set: {  United-States }, support: 0.82
+Frequent set: {  <=50K }, support: 0.74
+Frequent set: { Private }, support: 0.70
+Frequent set: {  Male }, support: 0.74
+Frequent set: {  White }, support: 0.81
+Frequent set: {  Married-civ-spouse }, support: 0.55
+Frequent set: {  White,  <=50K }, support: 0.60
+Frequent set: {  Male,  United-States }, support: 0.62
+Frequent set: {  Married-civ-spouse,  <=50K }, support: 0.35
+Frequent set: {  Husband,  White }, support: 0.37
+Frequent set: {  Married-civ-spouse,  Husband }, support: 0.46
+Frequent set: {  White,  United-States }, support: 0.70
+Frequent set: {  Married-civ-spouse,  White }, support: 0.43
+Frequent set: {  Married-civ-spouse, Private }, support: 0.36
+Frequent set: {  Husband,  Male }, support: 0.46
+Frequent set: {  White, Private }, support: 0.57
+Frequent set: {  Married-civ-spouse,  Male }, support: 0.48
+Frequent set: {  Husband,  United-States }, support: 0.38
+Frequent set: {  <=50K,  United-States }, support: 0.62
+Frequent set: {  Married-civ-spouse,  United-States }, support: 0.44
+Frequent set: {  White,  Male }, support: 0.62
+Frequent set: {  Male, Private }, support: 0.46
+Frequent set: {  Male,  <=50K }, support: 0.54
+Frequent set: { Private,  United-States }, support: 0.56
+Frequent set: {  <=50K, Private }, support: 0.58
+Frequent set: {  Husband,  United-States,  White }, support: 0.33
+Frequent set: {  White,  Male,  <=50K }, support: 0.47
+Frequent set: {  Male,  <=50K, Private }, support: 0.38
+Frequent set: {  White,  Male,  United-States }, support: 0.54
+Frequent set: {  Husband,  Male,  United-States }, support: 0.38
+Frequent set: {  White,  <=50K, Private }, support: 0.47
+Frequent set: {  White,  Male, Private }, support: 0.40
+Frequent set: {  White, Private,  United-States }, support: 0.48
+Frequent set: {  Husband,  Male,  White }, support: 0.37
+Frequent set: {  White,  <=50K,  United-States }, support: 0.52
+Frequent set: {  Married-civ-spouse,  Husband,  Male }, support: 0.46
+Frequent set: {  Married-civ-spouse,  White,  United-States }, support: 0.38
+Frequent set: {  Married-civ-spouse,  Husband,  White }, support: 0.37
+Frequent set: {  Married-civ-spouse,  Male,  United-States }, support: 0.40
+Frequent set: {  Male, Private,  United-States }, support: 0.38
+Frequent set: {  <=50K, Private,  United-States }, support: 0.47
+Frequent set: {  Married-civ-spouse,  Male,  <=50K }, support: 0.30
+Frequent set: {  Married-civ-spouse,  White,  Male }, support: 0.39
+Frequent set: {  Married-civ-spouse,  Husband,  United-States }, support: 0.38
+Frequent set: {  Male,  <=50K,  United-States }, support: 0.47
+Frequent set: {  <=50K,  United-States,  Male, Private }, support: 0.32
+Frequent set: {  Husband,  Married-civ-spouse,  White,  Male }, support: 0.37
+Frequent set: {  United-States,  White,  Male, Private }, support: 0.34
+Frequent set: {  <=50K,  White,  Male, Private }, support: 0.34
+Frequent set: {  United-States,  Married-civ-spouse,  White,  Male }, support: 0.35
+Frequent set: {  <=50K,  United-States,  White,  Male }, support: 0.41
+Frequent set: {  Husband,  United-States,  White,  Male }, support: 0.33
+Frequent set: {  <=50K,  United-States,  White, Private }, support: 0.40
+Frequent set: {  Husband,  United-States,  Married-civ-spouse,  Male }, support: 0.38
+Frequent set: {  Husband,  United-States,  Married-civ-spouse,  White }, support: 0.33
+Frequent set: {  Husband,  United-States,  Married-civ-spouse,  White,  Male }, support: 0.33
