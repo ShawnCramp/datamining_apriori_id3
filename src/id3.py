@@ -74,9 +74,9 @@ class Node:
         expand = ''
         for attr in self.table.attributes:
             if attr != 'class':
-                attr_entropy = self.entropy(attr)
-                # if (class_entropy - attr_entropy) > highest_gain:
-                #     expand = attr
+                gain = self.entropy(attr)
+                if gain > highest_gain:
+                    expand = attr
 
         print(expand)
 
@@ -91,6 +91,21 @@ class Node:
         Calculate Global Class Entropy Level
         :return:
         """
+        options = ATTR_OPTIONS['class']
+        option_counter = {}
+        for op in options:
+            counter = 0
+            for row in self.table.rows:
+                if row[-1] == op:
+                    counter += 1
+
+            option_counter[op] = counter
+
+        entropy = 0
+        for op, value in option_counter.items():
+            entropy -= (value / len(self.table)) * math.log2(value / len(self.table))
+
+        self.class_entropy = entropy
         return
 
     def entropy(self, attr):
@@ -131,11 +146,11 @@ class Node:
         # Calc Class Appearance over Attribute total appearance entropy
         # print(op_class_counter)
         entropy = 0
-        for key1, op in op_class_counter.iteritems():
+        for key1, op in op_class_counter.items():
 
             temp = 0
             # print(op)
-            for key2, sel in op.iteritems():
+            for key2, sel in op.items():
                 # print(sel)
                 # print(attribute_counter[key1])
                 if sel != 0:
@@ -145,12 +160,14 @@ class Node:
             entropy += (float(attribute_counter[key1]) / len(self.table)) * temp
 
         print('{} Entropy: {}'.format(attr, entropy))
+        gain = self.class_entropy - entropy
+        print('{} Gain: {}'.format(attr, gain))
 
         # Multiply Attribute Appearance by Entropy above
-        for key, op in op_class_counter.iteritems():
-            entropy = 0
+        # for key, op in op_class_counter.items():
+        #     gain = None
 
-        return
+        return gain
 
     class Meta:
         pass
@@ -214,8 +231,8 @@ def interpret_dataset(datafile):
 
 def main():
     # Init ID3 Dataset and Populate it from the DataSet File
-    attributes = interpret_options(optionsfile='datasets/attributes.txt')
-    values = interpret_dataset(datafile='datasets/dataset.txt')
+    attributes = interpret_options(optionsfile='datasets/k_attributes.txt')
+    values = interpret_dataset(datafile='datasets/k_dataset.txt')
     table = Table(attributes=attributes, rows=values)
     tree = Node(name='Root', depth=0, table=table)
 
