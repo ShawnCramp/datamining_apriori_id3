@@ -22,6 +22,8 @@ You need to implement two Data Mining algorithms seen in class:
 Import Declarations ------------------------------------- """
 import sys
 import math
+import operator
+import copy
 
 """ ---------------------------------------------------------
 Global Declarations ------------------------------------- """
@@ -44,10 +46,11 @@ class Table:
 
 
 class Node:
-    def __init__(self, name, depth, table):
-
+    def __init__(self, name, parent, depth, table):
+        print('\nNEW NODE {}'.format(name))
         # Attribute Result Associated with the Node
         self.name = name
+        self.parent = parent
 
         # Table Associated with the Node
         self.table = table
@@ -55,36 +58,82 @@ class Node:
         # Node Depth
         self.depth = depth
 
+        # Gain
+        self.gain = {}
+
         # Leaf Children Below the Node
-        # This will be of length 1 of it is a result
+        # This will be of length 1 if it is a result
         self.class_entropy = None
-        self._calculate_class_entropy()
-        self.children = None
+        self.children = []
 
         # Find Children
         self.find_children()
+
+        child_str = ''
+        for x in self.children:
+            try:
+                child_str += x.name + ', '
+            except Exception:
+                child_str += x + ', '
+        print('Node: {} - Parent: {} - Children: {}'.format(self.name, self.parent, child_str))
+
+    def __str__(self):
+        return 'Node: {}'.format(self.name)
+
+    def _get_new_table(self, attr, option):
+        """
+        Get New Table associated with the passed Attribute and Option
+        :param attr:
+        :param option:
+        :return:
+        """
+        current = self.table.rows
+        attributes = copy.deepcopy(self.table.attributes)
+
+        position = attributes.index(attr)
+        attributes.remove(attr)
+        new = []
+        for row in current:
+            if row[position] == option:
+                new.append(row)
+
+        for row in new:
+            row.remove(option)
+
+        return Table(attributes, new)
 
     def find_children(self):
         """
         Find all Children to this Node
         :return:
         """
-        # class_entropy = self.entropy('class')
-        highest_gain = 0
-        expand = ''
-        for attr in self.table.attributes:
-            if attr != 'class':
-                gain = self.entropy(attr)
-                if gain > highest_gain:
-                    expand = attr
+        if len(self.table) == 0:
+            self.children.append('Nothing')
+        elif self._breakout_check():
+            self.children.append(self.table.rows[0][-1])
+        else:
+            self._calculate_class_entropy()
+            for attr in self.table.attributes:
+                if attr != 'class':
+                    self.entropy(attr)
 
-        print(expand)
+            expand = max(self.gain.items(), key=operator.itemgetter(1))[0]
+            print('Expand On: {}'.format(expand))
 
-    def breakout_check(self):
+            for option in ATTR_OPTIONS[expand]:
+                table = self._get_new_table(expand, option)
+                self.children.append(Node(name=option, parent=self.name, depth=self.depth+1, table=table))
+
+    def _breakout_check(self):
         """
         Determine if the Node points to only one answer.  If so, it is a breakout Node
         and will have a Result instead of Leaf Nodes
         """
+        current = self.table.rows[0][-1]
+        for row in self.table.rows:
+            if row[-1] != current:
+                return False
+        return True
 
     def _calculate_class_entropy(self):
         """
@@ -106,6 +155,32 @@ class Node:
             entropy -= (value / len(self.table)) * math.log2(value / len(self.table))
 
         self.class_entropy = entropy
+        return
+
+    def _attr_counter(self, attr, attr_options):
+        """
+        Get Number of times an Attribute Appears
+        :param attr:
+        :return:
+        """
+        return
+
+    def _attr_class_counter(self, attr, class_options):
+        """
+        Get Number of times each Class Option appears for the passed attribute
+        :param attr:
+        :param class_options:
+        :return:
+        """
+        return
+
+    def _attr_entropy_calculator(self, attr, class_count):
+        """
+        Calculate Class Appearance over Attribute total appearance entropy
+        :param attr:
+        :param class_count:
+        :return:
+        """
         return
 
     def entropy(self, attr):
@@ -159,9 +234,9 @@ class Node:
 
             entropy += (float(attribute_counter[key1]) / len(self.table)) * temp
 
-        print('{} Entropy: {}'.format(attr, entropy))
         gain = self.class_entropy - entropy
-        print('{} Gain: {}'.format(attr, gain))
+        self.gain[attr] = gain
+        # print('{} Gain: {}'.format(attr, gain))
 
         # Multiply Attribute Appearance by Entropy above
         # for key, op in op_class_counter.items():
@@ -231,10 +306,10 @@ def interpret_dataset(datafile):
 
 def main():
     # Init ID3 Dataset and Populate it from the DataSet File
-    attributes = interpret_options(optionsfile='datasets/k_attributes.txt')
-    values = interpret_dataset(datafile='datasets/k_dataset.txt')
+    attributes = interpret_options(optionsfile='datasets/attributes.txt')
+    values = interpret_dataset(datafile='datasets/dataset.txt')
     table = Table(attributes=attributes, rows=values)
-    tree = Node(name='Root', depth=0, table=table)
+    tree = Node(name='Root', parent='Root', depth=0, table=table)
 
 
 if __name__ == '__main__':
