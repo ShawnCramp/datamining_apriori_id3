@@ -24,10 +24,15 @@ import sys
 import math
 import operator
 import copy
+import time
+from graphviz import Digraph
+
 
 """ ---------------------------------------------------------
 Global Declarations ------------------------------------- """
 ATTR_OPTIONS = {}
+ID = 1
+TREE = Digraph(comment='ID3 Decision Tree')
 
 """ ---------------------------------------------------------
 Class Declarations -------------------------------------- """
@@ -52,6 +57,14 @@ class Node:
         self.name = name
         self.parent = parent
 
+        # Graph Stuff
+        global ID
+        self.graph_id = str(ID)
+        TREE.node(str(ID), label=name)
+        if name != 'Root':
+            TREE.edge(parent.graph_id, str(ID))
+        ID += 1
+
         # Table Associated with the Node
         self.table = table
 
@@ -67,7 +80,7 @@ class Node:
         self.children = []
 
         # Find Children
-        self.find_children()
+        self._find_children()
 
         child_str = ''
         for x in self.children:
@@ -102,27 +115,36 @@ class Node:
 
         return Table(attributes, new)
 
-    def find_children(self):
+    def _find_children(self):
         """
         Find all Children to this Node
         :return:
         """
+        global ID
         if len(self.table) == 0:
             self.children.append('Nothing')
+            TREE.node(str(ID), label='No Result')
+            TREE.edge(str(self.graph_id), str(ID))
+            ID += 1
+
         elif self._breakout_check():
             self.children.append(self.table.rows[0][-1])
+
+            TREE.node(str(ID), label=self.table.rows[0][-1])
+            TREE.edge(str(self.graph_id), str(ID))
+            ID += 1
         else:
             self._calculate_class_entropy()
             for attr in self.table.attributes:
                 if attr != 'class':
-                    self.entropy(attr)
+                    self._entropy(attr)
 
             expand = max(self.gain.items(), key=operator.itemgetter(1))[0]
             print('Expand On: {}'.format(expand))
 
             for option in ATTR_OPTIONS[expand]:
                 table = self._get_new_table(expand, option)
-                self.children.append(Node(name=option, parent=self.name, depth=self.depth+1, table=table))
+                self.children.append(Node(name=option, parent=self, depth=self.depth+1, table=table))
 
     def _breakout_check(self):
         """
@@ -157,95 +179,101 @@ class Node:
         self.class_entropy = entropy
         return
 
-    def _attr_counter(self, attr, attr_options):
+    def _attr_counter(self, attr_options, position):
         """
         Get Number of times an Attribute Appears
         :param attr:
+        :attr_options:
         :return:
         """
-        return
 
-    def _attr_class_counter(self, attr, class_options):
+        # Dictionary containing count of Appearance of Attributes
+        attribute_counter = dict.fromkeys(attr_options, 0)
+
+        # Loop through all attribute options and count
+        # the number of times it appears in the data set
+        for row in self.table.rows:
+            attribute_counter[row[position]] += 1
+
+        return attribute_counter
+
+    def _attr_class_counter(self, attr_options, position, class_options):
         """
         Get Number of times each Class Option appears for the passed attribute
         :param attr:
         :param class_options:
         :return:
         """
-        return
+        option_class_counter = {}
+        for option in attr_options:
+            class_dictionary = dict.fromkeys(class_options, 0)
+            option_class_counter[option] = class_dictionary
 
-    def _attr_entropy_calculator(self, attr, class_count):
+        for row in self.table.rows:
+            attr = option_class_counter[row[position]]
+            attr[row[-1]] += 1
+
+        return option_class_counter
+
+    @staticmethod
+    def _attr_entropy_calculator(attribute_counter, option_class_counter, data_length):
         """
         Calculate Class Appearance over Attribute total appearance entropy
         :param attr:
         :param class_count:
         :return:
         """
-        return
+        entropy = 0
+        for key_one, op in option_class_counter.items():
+            temp = 0
+            for key2, sel in op.items():
+                if sel != 0:
+                    div = float(sel) / attribute_counter[key_one]
+                    temp -= div * math.log2(div)
 
-    def entropy(self, attr):
+            entropy += (float(attribute_counter[key_one]) / data_length) * temp
+
+        return entropy
+
+    def _entropy(self, attr):
         """
         Calculate Global Class Entropy Level
         :return:
         """
 
         # Get number of instances in the dataset
-        data_count = len(self.table)
+        data_length = len(self.table)
         options = ATTR_OPTIONS[attr]  # Options for the Attribute header
         position = self.table.attributes.index(attr)
 
         # Steps for Entropy
         # Get Number of times each attribute appears
-        attribute_counter = {}
-        for op in options:
-            counter = 0
-            for row in self.table.rows:
-                if row[position] == str(op):
-                    counter += 1
-
-            attribute_counter[op] = counter
+        attribute_counter = self._attr_counter(
+            attr_options=options,
+            position=position
+        )
 
         # Get Number of times each class options shows up for each attribute option
         class_options = ATTR_OPTIONS['class']
-        op_class_counter = {}
-        for op in options:
-            class_counter = {}
-            for co in class_options:
-                counter = 0
-                for row in self.table.rows:
-                    if row[position] == str(op) and row[-1] == co:
-                        counter += 1
-                class_counter[co] = counter
-            op_class_counter[op] = class_counter
+        option_class_counter = self._attr_class_counter(
+            attr_options=options,
+            position=position,
+            class_options=class_options
+        )
 
         # Calc Class Appearance over Attribute total appearance entropy
         # print(op_class_counter)
-        entropy = 0
-        for key1, op in op_class_counter.items():
+        entropy = self._attr_entropy_calculator(
+            attribute_counter=attribute_counter,
+            option_class_counter=option_class_counter,
+            data_length=data_length
+        )
 
-            temp = 0
-            # print(op)
-            for key2, sel in op.items():
-                # print(sel)
-                # print(attribute_counter[key1])
-                if sel != 0:
-                    div = float(sel) / attribute_counter[key1]
-                    temp -= div * math.log(div, 2)
-
-            entropy += (float(attribute_counter[key1]) / len(self.table)) * temp
-
+        # Calculate Gain
         gain = self.class_entropy - entropy
         self.gain[attr] = gain
-        # print('{} Gain: {}'.format(attr, gain))
-
-        # Multiply Attribute Appearance by Entropy above
-        # for key, op in op_class_counter.items():
-        #     gain = None
 
         return gain
-
-    class Meta:
-        pass
 
 
 """ ---------------------------------------------------------
@@ -281,7 +309,7 @@ def interpret_options(optionsfile):
 
 def interpret_dataset(datafile):
     # Open File Handle and Read Lines
-    datalines = open(datafile).readlines()
+    file = open(datafile).readlines()
     values = []
 
     # Get Dataset Attribute Count (Subtract 1 since the resulting class is not an attribute)
@@ -289,7 +317,7 @@ def interpret_dataset(datafile):
     print('Number of Attributes: %d' % attr_count)
 
     # Loop through all entries in the data set
-    for line in datalines:
+    for line in file:
 
         # If line does not contain missing information then keep the line
         if line.find("?") == -1:
@@ -306,10 +334,13 @@ def interpret_dataset(datafile):
 
 def main():
     # Init ID3 Dataset and Populate it from the DataSet File
+    start = time.time()
     attributes = interpret_options(optionsfile='datasets/attributes.txt')
     values = interpret_dataset(datafile='datasets/dataset.txt')
     table = Table(attributes=attributes, rows=values)
     tree = Node(name='Root', parent='Root', depth=0, table=table)
+    print('\n------ RUN TIME - {} -------'.format(time.time() - start))
+    TREE.render('test-output/round-table.gv')
 
 
 if __name__ == '__main__':
