@@ -31,10 +31,20 @@ from graphviz import Digraph
 
 """ ---------------------------------------------------------
 Global Declarations ------------------------------------- """
+
+# Contains all Domain Options for Attributes
 ATTR_OPTIONS = {}
+
+# Contains Ranges of Continuous Attributes by Dataset Column number.  This won't work after first iteration of table
 CONTINUOUS_RANGES = {}
+
+# Contains whether an Attribute is Continuous or Categorical
 ATTR_TYPE = {}
+
+# Current Graphviz NODE ID
 ID = 1
+
+# Global Declaration of Graphviz Node
 TREE = Digraph(comment='ID3 Decision Tree')
 
 """ ---------------------------------------------------------
@@ -55,7 +65,8 @@ class Table:
 
 class Node:
     def __init__(self, name, parent, depth, table):
-        # print('\nNEW NODE {}'.format(name))
+        print('\nNEW NODE {}'.format(name))
+
         # Attribute Result Associated with the Node
         self.name = name
         self.parent = parent
@@ -74,7 +85,7 @@ class Node:
         # Node Depth
         self.depth = depth
 
-        # Gain
+        # Dictionary of Gain attached to each Attribute
         self.gain = {}
 
         # Leaf Children Below the Node
@@ -85,43 +96,44 @@ class Node:
         # Find Children
         self._find_children()
 
-        child_str = ''
-        for x in self.children:
-            try:
-                child_str += str(x.name) + ', '
-            except Exception:
-                child_str += x + ', '
+        # This is just for printing to the console
+        # child_str = ''
+        # for x in self.children:
+        #     try:
+        #         child_str += str(x.name) + ', '
+        #     except Exception:
+        #         child_str += x + ', '
         # print('Node: {} - Parent: {} - Children: {}'.format(self.name, self.parent, child_str))
 
     def __str__(self):
         return 'Node: {}'.format(self.name)
 
-    def _find_range_index(self, attr, value):
-        """
-        Find Continuous Value Range Index
-        :param value:
-        :return:
-        """
-        domain = ATTR_OPTIONS[attr]
-
-        if value < domain[1]:
-            return 0
-        elif domain[1] <= value < domain[2]:
-            return 1
-        elif domain[2] <= value < domain[3]:
-            return 2
-        elif domain[3] <= value < domain[4]:
-            return 3
-        elif domain[4] <= value < domain[5]:
-            return 4
-        elif domain[5] <= value < domain[6]:
-            return 5
-        elif domain[6] <= value < domain[7]:
-            return 6
-        elif domain[7] <= value < domain[8]:
-            return 7
-        else:
-            return 8
+    # def _find_range_index(self, attr, value):
+    #     """
+    #     Find Continuous Value Range Index
+    #     :param value:
+    #     :return:
+    #     """
+    #     domain = ATTR_OPTIONS[attr]
+    #
+    #     if value < domain[1]:
+    #         return 0
+    #     elif domain[1] <= value < domain[2]:
+    #         return 1
+    #     elif domain[2] <= value < domain[3]:
+    #         return 2
+    #     elif domain[3] <= value < domain[4]:
+    #         return 3
+    #     elif domain[4] <= value < domain[5]:
+    #         return 4
+    #     elif domain[5] <= value < domain[6]:
+    #         return 5
+    #     elif domain[6] <= value < domain[7]:
+    #         return 6
+    #     elif domain[7] <= value < domain[8]:
+    #         return 7
+    #     else:
+    #         return 8
 
     def _get_new_table(self, attr, option):
         """
@@ -130,42 +142,66 @@ class Node:
         :param option:
         :return:
         """
+        print('Getting New Table')
         current = copy.deepcopy(self.table.rows)
         attributes = copy.deepcopy(self.table.attributes)
-
         position = attributes.index(attr)
         attributes.remove(attr)
         new = []
 
+        if ATTR_TYPE[attr] == 'continuous':
+            continuous = True
+        else:
+            continuous = False
+
+        print('\nCurrent Option Domain being Evaluated: {}\n'.format(option))
+
         for row in current:
             # All I need to do is see if row[position] is in a range, instead of equal to option
-            if ATTR_TYPE[attr] == 'continuous':
-                # print(row)
-                # print('I AM {} AND MY POSITION IS {} AND MY VALUE IS {}'.format(attr, position, row[position]))
-                thing = int(row[position])
-                okay = ATTR_OPTIONS[attr]
-                # print("option: {}".format(option))
-                # print("thing: {}".format(thing))
-                # print("okay: {}".format(okay))
-                if len(okay) > okay.index(option):
-                    upper_bound = option
-                else:
-                    upper_bound = okay[okay.index(option) + 1]
+            if continuous:
+                current_value = int(row[position])
+                # attr_options = ATTR_OPTIONS[attr]
 
-                if option <= thing <= upper_bound:
-                    # print("Pruned")
-                    # row.remove(thing)
-                    row.remove(str(thing))
+                # for x, r in enumerate(attr_options):
+                #     if current_value in r:
+                #         entry_range = attr_options[x]
+                #         break
+
+                # print('Current Value being Evaluated: {}'.format(current_value))
+                # print('Current Row being Evaluated: {}'.format(row))
+                if current_value in option:
+                    # print('Value Added to New Table\n')
+                    row.remove(str(current_value))
                     new.append(row)
-                    # print(new)
-                    # print()
+
             else:
 
                 if row[position] == option:
                     row.remove(option)
                     new.append(row)
 
+        print('New Table Length: {}'.format(len(new)))
         return Table(attributes, new)
+
+    def _inconclusive_check(self):
+        """
+        Check to see if results are Inconclusive.
+        I.E.  The results have no more attributes to expand on but still have different class values
+        :return:
+        """
+        print('Inconclusive Check')
+        if len(self.table.attributes) == 1 and self.table.attributes[0] == 'class':
+            print('Performing Inconclusive Loop')
+            last = self.table.rows[0][-1]
+            for row in self.table.rows:
+                current = row[-1]
+                if last != current:
+                    print('\nResults from Branch are Inconclusive\n')
+                    return True
+
+                last = current
+
+        return False
 
     def _find_children(self):
         """
@@ -173,32 +209,57 @@ class Node:
         :return:
         """
         global ID
+        print('Finding Children')
         if len(self.table) == 0:
-            self.children.append('Nothing')
+
+            # If length of Table is 0, then there are no results by following this path
+            self.children.append('No Result')
             TREE.node(str(ID), label='No Result')
             TREE.edge(str(self.graph_id), str(ID))
             ID += 1
 
         elif self._breakout_check():
+
+            # If all the Class Options are the same, then we have found a result
             self.children.append(self.table.rows[0][-1])
 
             TREE.node(str(ID), label=self.table.rows[0][-1])
             TREE.edge(str(self.graph_id), str(ID))
             ID += 1
+        elif self._inconclusive_check():
+
+            # If Results are Inconclusive then attach inconclusive node
+            self.children.append('Inconclusive')
+            TREE.node(str(ID), label='Inconclusive')
+            TREE.edge(str(self.graph_id), str(ID))
+            ID += 1
         else:
+
+            # Find Children of Node
+            # Calculate global Class Entropy
             self._calculate_class_entropy()
+
+            # Find Entropy of all Attributes other then the Class
             for attr in self.table.attributes:
                 if attr != 'class':
                     self._entropy(attr)
 
+            # Determine the Attribute that received the highest GAIN value
+            print('Current Gain Options: {}'.format(self.gain.items()))
+            print('Attribute List: {}'.format(self.table.attributes))
+            print('Number or Rows in Table: {}'.format(len(self.table)))
             expand = max(self.gain.items(), key=operator.itemgetter(1))[0]
-            # print('Expand On: {}'.format(expand))
+            print('Expand On: {}'.format(expand))
 
+            # This is happening because there are no attributes to expand on, however the classes are still
+            # difference.  So in the end, the tree was in conclusive.
+
+            # Expansions is the Domain of the Attribute we are expanding
             expansions = ATTR_OPTIONS[expand]
-            if expansions[0] == 'continuous':
-                position = self.table.attributes.index(expand)
-                expansions = CONTINUOUS_RANGES[position]
-
+            print('Expanding on Domain Options: {}'.format(expansions))
+            # if expansions[0] == 'continuous':
+            #     position = self.table.attributes.index(expand)
+            #     expansions = CONTINUOUS_RANGES[position]
             for option in expansions:
                 table = self._get_new_table(expand, option)
                 self.children.append(Node(name=option, parent=self, depth=self.depth+1, table=table))
@@ -243,39 +304,65 @@ class Node:
         :attr_options:
         :return:
         """
+        print('Attribute Counting')
 
         # Dictionary containing count of Appearance of Attributes
         attribute_counter = dict.fromkeys(attr_options, 0)
         option_class_counter = {}
 
-        if continuous:
+        """
+        Create Dictionary of Dictionaries for how many times Class Options Appear
+        Ex:
+            If Expanding on Education, and High-School is in the Domain of Education,
+            one entry in the dictionary might look like this:
 
-            for option in attr_options:
-                class_dictionary = dict.fromkeys(class_options, 0)
-                option_class_counter[option] = class_dictionary
+            option_class_counter = {
+                'High-School': {
+                    '>50k': 0,
+                    '<=50k: 0
+                }
+            }
+        """
+        for option in attr_options:
+            class_dictionary = dict.fromkeys(class_options, 0)
+            option_class_counter[option] = class_dictionary
+
+        # If the Attribute is Continuous, then we evaluate on a Range instead of Directly
+        # against the option
+        if continuous:
 
             # Loop through all attribute options and count
             # the number of times it appears in the data set
-
             for row in self.table.rows:
-                domain_position = self._find_range_index(attr, int(row[position]))
-                attribute_counter[attr_options[domain_position]] += 1
-                at = option_class_counter[attr_options[domain_position]]
+
+                for x, r in enumerate(attr_options):
+                    if int(row[position]) in r:
+                        entry_range = attr_options[x]
+                        break
+
+                # print('{} in range {}'.format(row[position], entry_range))
+
+                attribute_counter[entry_range] += 1
+                at = option_class_counter[entry_range]
                 at[row[-1]] += 1
 
         else:
-
-            for option in attr_options:
-                class_dictionary = dict.fromkeys(class_options, 0)
-                option_class_counter[option] = class_dictionary
 
             # Loop through all attribute options and count
             # the number of times it appears in the data set
             for row in self.table.rows:
                 attribute_counter[row[position]] += 1
 
-                attr = option_class_counter[row[position]]
-                attr[row[-1]] += 1
+                # While looping, we count the number of times each class option appears
+                # for the current domain option as well
+                at = option_class_counter[row[position]]
+                at[row[-1]] += 1
+
+        # Test Printing
+        # print('\nAttribute Counter')
+        # print(attribute_counter)
+        # print('\nOption Class Counter')
+        # print(option_class_counter)
 
         return attribute_counter, option_class_counter
 
@@ -315,6 +402,7 @@ class Node:
 
             entropy += (float(attribute_counter[key_one]) / data_length) * temp
 
+        print('\nEntropy Calculation Successful: {}'.format(entropy))
         return entropy
 
     def _entropy(self, attr):
@@ -325,14 +413,16 @@ class Node:
 
         # Get number of instances in the dataset
         data_length = len(self.table)
-        options = ATTR_OPTIONS[attr]  # Options for the Attribute header
+
+        # Domain Options for Attribute being Evaluated
+        options = ATTR_OPTIONS[attr]
+
+        # Column Position of Attribute
         position = self.table.attributes.index(attr)
 
         # Find out if attribute is continuous
         continuous = False
-        thing = ATTR_TYPE[attr]
-        if thing == 'continuous':
-            # options = CONTINUOUS_RANGES[position]
+        if ATTR_TYPE[attr] == 'continuous':
             continuous = True
 
         # Steps for Entropy
@@ -449,24 +539,28 @@ def interpret_dataset(datafile, attributes):
                 sys.exit('All Data Instances must be the same length')
 
     for key, value in continuous_dictionary.items():
-        # print(key)
-        # print(value)
-        # print(max(value))
-        # print(min(value))
+        print(key)
+        print(value)
+        print(max(value))
+        print(min(value))
         s = int(max(value)) - int(min(value))
-        r = round(s / 10)
-        # print(r)
+        r = math.ceil(s / 10)
+        print(r)
         domain = []
-        for i in range(0, 9, 1):
-            domain.append(min(value) + (i*r))
+        for i in range(0, 10, 1):
+            print(range(min(value)+(i*r), min(value)+(i*r+r)))
+            domain.append(range(min(value)+(i*r), min(value)+(i*r+r)))
 
-        domain.append(max(value))
-        # print(domain)
-        # print()
+        print(domain)
+        print()
 
         CONTINUOUS_RANGES[key] = domain
+        print(CONTINUOUS_RANGES)
         attr = attributes[key]
         ATTR_OPTIONS[attr] = domain
+        print(ATTR_OPTIONS)
+        print('-------------------------------------------------\n\n')
+        print('RUN PROGRAM\n---------------------------------------------')
 
     return values
 
@@ -474,8 +568,8 @@ def interpret_dataset(datafile, attributes):
 def main():
     # Init ID3 Dataset and Populate it from the DataSet File
     start = time.time()
-    attributes = interpret_options(optionsfile='datasets/census_options.txt')
-    values = interpret_dataset(datafile='datasets/census.txt', attributes=attributes)
+    attributes = interpret_options(optionsfile='datasets/attributes.txt')
+    values = interpret_dataset(datafile='datasets/trim.txt', attributes=attributes)
     table = Table(attributes=attributes, rows=values)
     # print(ATTR_TYPE)
     tree = Node(name='Root', parent='Root', depth=0, table=table)

@@ -1,0 +1,2 @@
+age: continuous
+class: >50K, <=50K
