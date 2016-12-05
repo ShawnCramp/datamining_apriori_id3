@@ -76,7 +76,7 @@ class Node:
         self.graph_id = str(ID)
         TREE.node(str(ID), label=str(name))
         if name != 'Root':
-            TREE.edge(parent.graph_id, str(ID))
+            TREE.edge(parent.graph_id, str(ID), label='')
         ID += 1
 
         # Table Associated with the Node
@@ -108,33 +108,6 @@ class Node:
     def __str__(self):
         return 'Node: {}'.format(self.name)
 
-    # def _find_range_index(self, attr, value):
-    #     """
-    #     Find Continuous Value Range Index
-    #     :param value:
-    #     :return:
-    #     """
-    #     domain = ATTR_OPTIONS[attr]
-    #
-    #     if value < domain[1]:
-    #         return 0
-    #     elif domain[1] <= value < domain[2]:
-    #         return 1
-    #     elif domain[2] <= value < domain[3]:
-    #         return 2
-    #     elif domain[3] <= value < domain[4]:
-    #         return 3
-    #     elif domain[4] <= value < domain[5]:
-    #         return 4
-    #     elif domain[5] <= value < domain[6]:
-    #         return 5
-    #     elif domain[6] <= value < domain[7]:
-    #         return 6
-    #     elif domain[7] <= value < domain[8]:
-    #         return 7
-    #     else:
-    #         return 8
-
     def _get_new_table(self, attr, option):
         """
         Get New Table associated with the passed Attribute and Option
@@ -142,17 +115,19 @@ class Node:
         :param option:
         :return:
         """
+
+        if ATTR_TYPE[attr] == 'continuous':
+            continuous = True
+            current = copy.deepcopy(self.table.rows)
+        else:
+            continuous = False
+            current = copy.deepcopy(self.table.rows)
+
         print('Getting New Table')
-        current = copy.deepcopy(self.table.rows)
         attributes = copy.deepcopy(self.table.attributes)
         position = attributes.index(attr)
         attributes.remove(attr)
         new = []
-
-        if ATTR_TYPE[attr] == 'continuous':
-            continuous = True
-        else:
-            continuous = False
 
         print('\nCurrent Option Domain being Evaluated: {}\n'.format(option))
 
@@ -160,18 +135,10 @@ class Node:
             # All I need to do is see if row[position] is in a range, instead of equal to option
             if continuous:
                 current_value = int(row[position])
-                # attr_options = ATTR_OPTIONS[attr]
 
-                # for x, r in enumerate(attr_options):
-                #     if current_value in r:
-                #         entry_range = attr_options[x]
-                #         break
-
-                # print('Current Value being Evaluated: {}'.format(current_value))
-                # print('Current Row being Evaluated: {}'.format(row))
                 if current_value in option:
-                    # print('Value Added to New Table\n')
-                    row.remove(str(current_value))
+                    # row.remove(str(current_value))
+                    del row[position]
                     new.append(row)
 
             else:
@@ -334,11 +301,15 @@ class Node:
             # Loop through all attribute options and count
             # the number of times it appears in the data set
             for row in self.table.rows:
-
-                for x, r in enumerate(attr_options):
-                    if int(row[position]) in r:
-                        entry_range = attr_options[x]
-                        break
+                # print('Current Attribute: {}'.format(attr))
+                try:
+                    for x, r in enumerate(attr_options):
+                        if int(row[position]) in r:
+                            entry_range = attr_options[x]
+                            break
+                except Exception as e:
+                    for i in self.table.rows:
+                        print(i)
 
                 # print('{} in range {}'.format(row[position], entry_range))
 
@@ -539,26 +510,28 @@ def interpret_dataset(datafile, attributes):
                 sys.exit('All Data Instances must be the same length')
 
     for key, value in continuous_dictionary.items():
-        print(key)
-        print(value)
-        print(max(value))
-        print(min(value))
+        # print(key)
+        # print(value)
+        # print(max(value))
+        # print(min(value))
         s = int(max(value)) - int(min(value))
         r = math.ceil(s / 10)
-        print(r)
+        # print(r)
         domain = []
         for i in range(0, 10, 1):
             print(range(min(value)+(i*r), min(value)+(i*r+r)))
             domain.append(range(min(value)+(i*r), min(value)+(i*r+r)))
 
-        print(domain)
-        print()
+        # print(domain)
+        # print()
 
-        CONTINUOUS_RANGES[key] = domain
-        print(CONTINUOUS_RANGES)
+        # CONTINUOUS_RANGES[key] = domain
+        # print(CONTINUOUS_RANGES)
         attr = attributes[key]
-        ATTR_OPTIONS[attr] = domain
-        print(ATTR_OPTIONS)
+        # ATTR_OPTIONS[attr] = domain
+        median = int(statistics.median(value))
+        # print(median)
+        ATTR_OPTIONS[attr] = [range(min(value), median), range(median, max(value)+1)]
         print('-------------------------------------------------\n\n')
         print('RUN PROGRAM\n---------------------------------------------')
 
@@ -568,8 +541,8 @@ def interpret_dataset(datafile, attributes):
 def main():
     # Init ID3 Dataset and Populate it from the DataSet File
     start = time.time()
-    attributes = interpret_options(optionsfile='datasets/attributes.txt')
-    values = interpret_dataset(datafile='datasets/trim.txt', attributes=attributes)
+    attributes = interpret_options(optionsfile='datasets/census_options.txt')
+    values = interpret_dataset(datafile='datasets/census.txt', attributes=attributes)
     table = Table(attributes=attributes, rows=values)
     # print(ATTR_TYPE)
     tree = Node(name='Root', parent='Root', depth=0, table=table)

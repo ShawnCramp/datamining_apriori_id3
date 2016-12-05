@@ -16961,8 +16961,6 @@
 62, Private, 71751, Some-college, 10, Married-civ-spouse, Exec-managerial, Husband, White, Male, 0, 1977, 98, United-States, >50K
 28, Private, 176683, Bachelors, 13, Married-civ-spouse, Exec-managerial, Husband, White, Male, 5178, 0, 50, United-States, >50K
 34, Private, 342709, Masters, 14, Married-civ-spouse, Exec-managerial, Husband, White, Male, 0, 0, 40, United-States, <=50K
-51, Private, 53838, Bachelors, 13, Married-civ-spouse, Handlers-cleaners, Husband, White, Male, 0, 0, 40, United-States, <=50K
-45, Local-gov, 209482, Masters, 14, Married-civ-spouse, Prof-specialty, Wife, White, Female, 0, 0, 45, United-States, >50K
 44, Private, 214242, Some-college, 10, Married-civ-spouse, Transport-moving, Husband, White, Male, 0, 0, 50, United-States, >50K
 47, ?, 34458, 7th-8th, 4, Married-civ-spouse, ?, Husband, White, Male, 0, 0, 10, United-States, <=50K
 35, Private, 100375, Some-college, 10, Married-spouse-absent, Farming-fishing, Own-child, White, Male, 0, 0, 40, United-States, <=50K
