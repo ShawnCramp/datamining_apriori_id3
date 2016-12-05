@@ -25,12 +25,15 @@ import math
 import operator
 import copy
 import time
+import statistics
 from graphviz import Digraph
 
 
 """ ---------------------------------------------------------
 Global Declarations ------------------------------------- """
 ATTR_OPTIONS = {}
+CONTINUOUS_RANGES = {}
+ATTR_TYPE = {}
 ID = 1
 TREE = Digraph(comment='ID3 Decision Tree')
 
@@ -52,7 +55,7 @@ class Table:
 
 class Node:
     def __init__(self, name, parent, depth, table):
-        print('\nNEW NODE {}'.format(name))
+        # print('\nNEW NODE {}'.format(name))
         # Attribute Result Associated with the Node
         self.name = name
         self.parent = parent
@@ -60,7 +63,7 @@ class Node:
         # Graph Stuff
         global ID
         self.graph_id = str(ID)
-        TREE.node(str(ID), label=name)
+        TREE.node(str(ID), label=str(name))
         if name != 'Root':
             TREE.edge(parent.graph_id, str(ID))
         ID += 1
@@ -85,13 +88,40 @@ class Node:
         child_str = ''
         for x in self.children:
             try:
-                child_str += x.name + ', '
+                child_str += str(x.name) + ', '
             except Exception:
                 child_str += x + ', '
-        print('Node: {} - Parent: {} - Children: {}'.format(self.name, self.parent, child_str))
+        # print('Node: {} - Parent: {} - Children: {}'.format(self.name, self.parent, child_str))
 
     def __str__(self):
         return 'Node: {}'.format(self.name)
+
+    def _find_range_index(self, attr, value):
+        """
+        Find Continuous Value Range Index
+        :param value:
+        :return:
+        """
+        domain = ATTR_OPTIONS[attr]
+
+        if value < domain[1]:
+            return 0
+        elif domain[1] <= value < domain[2]:
+            return 1
+        elif domain[2] <= value < domain[3]:
+            return 2
+        elif domain[3] <= value < domain[4]:
+            return 3
+        elif domain[4] <= value < domain[5]:
+            return 4
+        elif domain[5] <= value < domain[6]:
+            return 5
+        elif domain[6] <= value < domain[7]:
+            return 6
+        elif domain[7] <= value < domain[8]:
+            return 7
+        else:
+            return 8
 
     def _get_new_table(self, attr, option):
         """
@@ -100,18 +130,40 @@ class Node:
         :param option:
         :return:
         """
-        current = self.table.rows
+        current = copy.deepcopy(self.table.rows)
         attributes = copy.deepcopy(self.table.attributes)
 
         position = attributes.index(attr)
         attributes.remove(attr)
         new = []
-        for row in current:
-            if row[position] == option:
-                new.append(row)
 
-        for row in new:
-            row.remove(option)
+        for row in current:
+            # All I need to do is see if row[position] is in a range, instead of equal to option
+            if ATTR_TYPE[attr] == 'continuous':
+                # print(row)
+                # print('I AM {} AND MY POSITION IS {} AND MY VALUE IS {}'.format(attr, position, row[position]))
+                thing = int(row[position])
+                okay = ATTR_OPTIONS[attr]
+                # print("option: {}".format(option))
+                # print("thing: {}".format(thing))
+                # print("okay: {}".format(okay))
+                if len(okay) > okay.index(option):
+                    upper_bound = option
+                else:
+                    upper_bound = okay[okay.index(option) + 1]
+
+                if option <= thing <= upper_bound:
+                    # print("Pruned")
+                    # row.remove(thing)
+                    row.remove(str(thing))
+                    new.append(row)
+                    # print(new)
+                    # print()
+            else:
+
+                if row[position] == option:
+                    row.remove(option)
+                    new.append(row)
 
         return Table(attributes, new)
 
@@ -140,9 +192,14 @@ class Node:
                     self._entropy(attr)
 
             expand = max(self.gain.items(), key=operator.itemgetter(1))[0]
-            print('Expand On: {}'.format(expand))
+            # print('Expand On: {}'.format(expand))
 
-            for option in ATTR_OPTIONS[expand]:
+            expansions = ATTR_OPTIONS[expand]
+            if expansions[0] == 'continuous':
+                position = self.table.attributes.index(expand)
+                expansions = CONTINUOUS_RANGES[position]
+
+            for option in expansions:
                 table = self._get_new_table(expand, option)
                 self.children.append(Node(name=option, parent=self, depth=self.depth+1, table=table))
 
@@ -179,7 +236,7 @@ class Node:
         self.class_entropy = entropy
         return
 
-    def _attr_counter(self, attr_options, position):
+    def _attr_counter(self, attr, attr_options, position, class_options, continuous):
         """
         Get Number of times an Attribute Appears
         :param attr:
@@ -189,13 +246,38 @@ class Node:
 
         # Dictionary containing count of Appearance of Attributes
         attribute_counter = dict.fromkeys(attr_options, 0)
+        option_class_counter = {}
 
-        # Loop through all attribute options and count
-        # the number of times it appears in the data set
-        for row in self.table.rows:
-            attribute_counter[row[position]] += 1
+        if continuous:
 
-        return attribute_counter
+            for option in attr_options:
+                class_dictionary = dict.fromkeys(class_options, 0)
+                option_class_counter[option] = class_dictionary
+
+            # Loop through all attribute options and count
+            # the number of times it appears in the data set
+
+            for row in self.table.rows:
+                domain_position = self._find_range_index(attr, int(row[position]))
+                attribute_counter[attr_options[domain_position]] += 1
+                at = option_class_counter[attr_options[domain_position]]
+                at[row[-1]] += 1
+
+        else:
+
+            for option in attr_options:
+                class_dictionary = dict.fromkeys(class_options, 0)
+                option_class_counter[option] = class_dictionary
+
+            # Loop through all attribute options and count
+            # the number of times it appears in the data set
+            for row in self.table.rows:
+                attribute_counter[row[position]] += 1
+
+                attr = option_class_counter[row[position]]
+                attr[row[-1]] += 1
+
+        return attribute_counter, option_class_counter
 
     def _attr_class_counter(self, attr_options, position, class_options):
         """
@@ -246,20 +328,31 @@ class Node:
         options = ATTR_OPTIONS[attr]  # Options for the Attribute header
         position = self.table.attributes.index(attr)
 
+        # Find out if attribute is continuous
+        continuous = False
+        thing = ATTR_TYPE[attr]
+        if thing == 'continuous':
+            # options = CONTINUOUS_RANGES[position]
+            continuous = True
+
         # Steps for Entropy
         # Get Number of times each attribute appears
-        attribute_counter = self._attr_counter(
+        class_options = ATTR_OPTIONS['class']
+        attribute_counter, option_class_counter = self._attr_counter(
+            attr=attr,
             attr_options=options,
-            position=position
+            position=position,
+            class_options=class_options,
+            continuous=continuous
         )
 
         # Get Number of times each class options shows up for each attribute option
-        class_options = ATTR_OPTIONS['class']
-        option_class_counter = self._attr_class_counter(
-            attr_options=options,
-            position=position,
-            class_options=class_options
-        )
+        # class_options = ATTR_OPTIONS['class']
+        # option_class_counter = self._attr_class_counter(
+        #     attr_options=options,
+        #     position=position,
+        #     class_options=class_options
+        # )
 
         # Calc Class Appearance over Attribute total appearance entropy
         # print(op_class_counter)
@@ -291,6 +384,16 @@ proceed and view the code output he/she would like to view.
 --------------------------------------------------------- """
 
 
+def continuous_domains(set):
+    """
+    Calculate the Domain of the Continuous sets using the dictionary created
+    when reading the dataset file.
+    :param set:
+        Dictionary containing all values in continuous dataset
+    :return:
+    """
+
+
 def interpret_options(optionsfile):
     # Open File Handle and Read Lines
     lines = open(optionsfile).readlines()
@@ -302,12 +405,19 @@ def interpret_options(optionsfile):
         col = line.find(':')
         attr_name = line[:col].strip()
         attributes.append(attr_name)
-        ATTR_OPTIONS[attr_name] = line[col+1:].strip().replace(' ', '').split(',')
+        domain = line[col+1:].strip().replace(' ', '').split(',')
+        ATTR_OPTIONS[attr_name] = domain
+        if domain[0] == 'continuous':
+            ATTR_TYPE[attr_name] = 'continuous'
+        else:
+            ATTR_TYPE[attr_name] = 'whatever'
+
+    ATTR_TYPE['Root'] = 'whatever'
 
     return attributes
 
 
-def interpret_dataset(datafile):
+def interpret_dataset(datafile, attributes):
     # Open File Handle and Read Lines
     file = open(datafile).readlines()
     values = []
@@ -315,6 +425,12 @@ def interpret_dataset(datafile):
     # Get Dataset Attribute Count (Subtract 1 since the resulting class is not an attribute)
     attr_count = len(ATTR_OPTIONS)
     print('Number of Attributes: %d' % attr_count)
+
+    # Make dictionary for continuous attributes
+    continuous_dictionary = {}
+    for attr, domain in ATTR_OPTIONS.items():
+        if domain[0] == 'continuous':
+            continuous_dictionary[attributes.index(attr)] = []
 
     # Loop through all entries in the data set
     for line in file:
@@ -326,8 +442,31 @@ def interpret_dataset(datafile):
             instance = line.strip().replace(' ', '').split(',')
             if len(instance) == attr_count:
                 values.append(instance)
+                for position, domain in continuous_dictionary.items():
+                    domain.append(int(instance[position]))
+
             else:
                 sys.exit('All Data Instances must be the same length')
+
+    for key, value in continuous_dictionary.items():
+        # print(key)
+        # print(value)
+        # print(max(value))
+        # print(min(value))
+        s = int(max(value)) - int(min(value))
+        r = round(s / 10)
+        # print(r)
+        domain = []
+        for i in range(0, 9, 1):
+            domain.append(min(value) + (i*r))
+
+        domain.append(max(value))
+        # print(domain)
+        # print()
+
+        CONTINUOUS_RANGES[key] = domain
+        attr = attributes[key]
+        ATTR_OPTIONS[attr] = domain
 
     return values
 
@@ -335,9 +474,10 @@ def interpret_dataset(datafile):
 def main():
     # Init ID3 Dataset and Populate it from the DataSet File
     start = time.time()
-    attributes = interpret_options(optionsfile='datasets/attributes.txt')
-    values = interpret_dataset(datafile='datasets/dataset.txt')
+    attributes = interpret_options(optionsfile='datasets/census_options.txt')
+    values = interpret_dataset(datafile='datasets/census.txt', attributes=attributes)
     table = Table(attributes=attributes, rows=values)
+    # print(ATTR_TYPE)
     tree = Node(name='Root', parent='Root', depth=0, table=table)
     print('\n------ RUN TIME - {} -------'.format(time.time() - start))
     TREE.render('test-output/round-table.gv')
