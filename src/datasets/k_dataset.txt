@@ -12,3 +12,14 @@ C,70,TRUE,CLASS2
 C,80,FALSE,CLASS1
 C,80,FALSE,CLASS1
 C,96,FALSE,CLASS1
+
+one: o, b, x
+two: o, b, x
+three: o, b, x
+four: o, b, x
+five: o, b, x
+six: o, b, x
+seven: o, b, x
+eight: o, b, x
+nine: o, b, x
+class: positive, negative

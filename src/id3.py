@@ -65,6 +65,17 @@ class Table:
 
 class Node:
     def __init__(self, name, parent, depth, table):
+        """
+        Node Object Declaration
+        :param name:
+            The Attribute Name the Node will evaluate
+        :param parent:
+            The Parent Attribute to this Node
+        :param depth:
+            The depth level of the Node into the Tree
+        :param table:
+            The Table Object associated with this Node
+        """
         print('\nNEW NODE {}'.format(name))
 
         # Attribute Result Associated with the Node
@@ -97,13 +108,13 @@ class Node:
         self._find_children()
 
         # This is just for printing to the console
-        # child_str = ''
-        # for x in self.children:
-        #     try:
-        #         child_str += str(x.name) + ', '
-        #     except Exception:
-        #         child_str += x + ', '
-        # print('Node: {} - Parent: {} - Children: {}'.format(self.name, self.parent, child_str))
+        child_str = ''
+        for x in self.children:
+            try:
+                child_str += str(x.name) + ', '
+            except Exception:
+                child_str += x + ', '
+        print('Node: {} - Parent: {} - Children: {}'.format(self.name, self.parent, child_str))
 
     def __str__(self):
         return 'Node: {}'.format(self.name)
@@ -224,9 +235,6 @@ class Node:
             # Expansions is the Domain of the Attribute we are expanding
             expansions = ATTR_OPTIONS[expand]
             print('Expanding on Domain Options: {}'.format(expansions))
-            # if expansions[0] == 'continuous':
-            #     position = self.table.attributes.index(expand)
-            #     expansions = CONTINUOUS_RANGES[position]
             for option in expansions:
                 table = self._get_new_table(expand, option)
                 self.children.append(Node(name=option, parent=self, depth=self.depth+1, table=table))
@@ -235,6 +243,7 @@ class Node:
         """
         Determine if the Node points to only one answer.  If so, it is a breakout Node
         and will have a Result instead of Leaf Nodes
+        :return:
         """
         current = self.table.rows[0][-1]
         for row in self.table.rows:
@@ -264,11 +273,13 @@ class Node:
         self.class_entropy = entropy
         return
 
-    def _attr_counter(self, attr, attr_options, position, class_options, continuous):
+    def _attr_counter(self, attr_options, position, class_options, continuous):
         """
         Get Number of times an Attribute Appears
-        :param attr:
-        :attr_options:
+        :param attr_options:
+        :param position:
+        :param class_options:
+        :param continuous:
         :return:
         """
         print('Attribute Counting')
@@ -329,18 +340,13 @@ class Node:
                 at = option_class_counter[row[position]]
                 at[row[-1]] += 1
 
-        # Test Printing
-        # print('\nAttribute Counter')
-        # print(attribute_counter)
-        # print('\nOption Class Counter')
-        # print(option_class_counter)
-
         return attribute_counter, option_class_counter
 
     def _attr_class_counter(self, attr_options, position, class_options):
         """
         Get Number of times each Class Option appears for the passed attribute
-        :param attr:
+        :param attr_options:
+        :param position:
         :param class_options:
         :return:
         """
@@ -359,8 +365,9 @@ class Node:
     def _attr_entropy_calculator(attribute_counter, option_class_counter, data_length):
         """
         Calculate Class Appearance over Attribute total appearance entropy
-        :param attr:
-        :param class_count:
+        :param attribute_counter:
+        :param option_class_counter:
+        :param data_length:
         :return:
         """
         entropy = 0
@@ -379,6 +386,7 @@ class Node:
     def _entropy(self, attr):
         """
         Calculate Global Class Entropy Level
+        :param attr:
         :return:
         """
 
@@ -400,20 +408,11 @@ class Node:
         # Get Number of times each attribute appears
         class_options = ATTR_OPTIONS['class']
         attribute_counter, option_class_counter = self._attr_counter(
-            attr=attr,
             attr_options=options,
             position=position,
             class_options=class_options,
             continuous=continuous
         )
-
-        # Get Number of times each class options shows up for each attribute option
-        # class_options = ATTR_OPTIONS['class']
-        # option_class_counter = self._attr_class_counter(
-        #     attr_options=options,
-        #     position=position,
-        #     class_options=class_options
-        # )
 
         # Calc Class Appearance over Attribute total appearance entropy
         # print(op_class_counter)
@@ -443,16 +442,6 @@ user will be presented with a list of options on how to
 proceed and view the code output he/she would like to view.
 -------------------------------------------------------------
 --------------------------------------------------------- """
-
-
-def continuous_domains(set):
-    """
-    Calculate the Domain of the Continuous sets using the dictionary created
-    when reading the dataset file.
-    :param set:
-        Dictionary containing all values in continuous dataset
-    :return:
-    """
 
 
 def interpret_options(optionsfile):
@@ -510,27 +499,17 @@ def interpret_dataset(datafile, attributes):
                 sys.exit('All Data Instances must be the same length')
 
     for key, value in continuous_dictionary.items():
-        # print(key)
-        # print(value)
-        # print(max(value))
-        # print(min(value))
+
+        # Calculate Domain split for Continuous Attributes
         s = int(max(value)) - int(min(value))
         r = math.ceil(s / 10)
-        # print(r)
         domain = []
         for i in range(0, 10, 1):
             print(range(min(value)+(i*r), min(value)+(i*r+r)))
             domain.append(range(min(value)+(i*r), min(value)+(i*r+r)))
 
-        # print(domain)
-        # print()
-
-        # CONTINUOUS_RANGES[key] = domain
-        # print(CONTINUOUS_RANGES)
         attr = attributes[key]
-        # ATTR_OPTIONS[attr] = domain
         median = int(statistics.median(value))
-        # print(median)
         ATTR_OPTIONS[attr] = [range(min(value), median), range(median, max(value)+1)]
         print('-------------------------------------------------\n\n')
         print('RUN PROGRAM\n---------------------------------------------')
@@ -539,16 +518,24 @@ def interpret_dataset(datafile, attributes):
 
 
 def main():
-    # Init ID3 Dataset and Populate it from the DataSet File
+    # Initialize ID3 Dataset and Populate it from the DataSet File
+    # Start Timer for Runtime Calculation
     start = time.time()
-    attributes = interpret_options(optionsfile='datasets/census_options.txt')
-    values = interpret_dataset(datafile='datasets/census.txt', attributes=attributes)
+
+    # Interpret Attributes and Dataset File
+    # Enter File names into parameter options
+    attributes = interpret_options(optionsfile='datasets/k_attributes.txt')
+    values = interpret_dataset(datafile='datasets/k_dataset.txt', attributes=attributes)
+
+    # Create Table Object for Root Node using entire Dataset
     table = Table(attributes=attributes, rows=values)
-    # print(ATTR_TYPE)
+
+    # Create Root Node
     tree = Node(name='Root', parent='Root', depth=0, table=table)
     print('\n------ RUN TIME - {} -------'.format(time.time() - start))
-    TREE.render('test-output/round-table.gv')
 
+    # Render Graphviz Options File
+    TREE.render('test-output/round-table.gv')
 
 if __name__ == '__main__':
     main()
